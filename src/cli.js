@@ -154,7 +154,7 @@ function runMcp() {
   const { spawn } = require('child_process');
   const serverPath = path.join(__dirname, '..', 'mcp', 'server.mjs');
   const child = spawn(process.execPath, [serverPath], { stdio: 'inherit' });
-  child.on('exit', code => process.exit(code || 0));
+  child.on('exit', (code, signal) => process.exit(code ?? (signal ? 1 : 0)));
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────

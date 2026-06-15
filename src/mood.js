@@ -20,6 +20,18 @@ const SUCCESS_PATTERNS = [
   /all (tests )?pass/i,
 ];
 
+const THINKING_PATTERNS = [
+  /loading/i,
+  /fetching/i,
+  /downloading/i,
+  /installing/i,
+  /compiling/i,
+  /building/i,
+  /waiting/i,
+  /running/i,
+  /\.\.\./,
+];
+
 /**
  * Infers a mood key from text content and optional exit code.
  * @param {string} text
@@ -39,7 +51,11 @@ function detectMood(text, exitCode = null) {
     if (pattern.test(text)) return "success";
   }
 
+  for (const pattern of THINKING_PATTERNS) {
+    if (pattern.test(text)) return 'thinking';
+  }
+
   return "neutral";
 }
 
-module.exports = { detectMood, ERROR_PATTERNS, SUCCESS_PATTERNS };
+module.exports = { detectMood, ERROR_PATTERNS, SUCCESS_PATTERNS, THINKING_PATTERNS };

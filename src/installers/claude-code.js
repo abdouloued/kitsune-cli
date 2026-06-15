@@ -19,7 +19,9 @@ async function installClaudeCode({ projectDir = null, global: isGlobal = false }
   let existing = {};
   if (fs.existsSync(settingsPath)) {
     try { existing = JSON.parse(fs.readFileSync(settingsPath, 'utf8')); }
-    catch { existing = {}; }
+    catch (err) {
+      throw new Error(`Cannot parse ${settingsPath}: ${err.message}\nFix the JSON manually before running kitsune install.`);
+    }
   } else {
     fs.mkdirSync(base, { recursive: true });
   }
