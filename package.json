@@ -1,0 +1,19 @@
+{
+  "name": "kitsune-cli",
+  "version": "0.1.0",
+  "description": "A fox spirit companion for your terminal — pipe AI/CLI output through a persona-driven speech bubble",
+  "main": "src/cli.js",
+  "bin": {
+    "kitsune": "./bin/kitsune"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "test:watch": "node --test --watch tests/*.test.js"
+  },
+  "keywords": ["cli", "ascii-art", "cowsay", "claude-code", "fun", "terminal"],
+  "license": "MIT",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  }
+}
