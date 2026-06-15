@@ -66,3 +66,11 @@ describe('installSkill', () => {
     fs.rmSync(dir, { recursive: true });
   });
 });
+
+const { installOpencode } = require('../src/installers/opencode');
+
+describe('installOpencode', () => {
+  it('runs without throwing even when opencode is not installed', async () => {
+    await assert.doesNotReject(() => installOpencode({ dryRun: true }));
+  });
+});
