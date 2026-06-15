@@ -45,3 +45,24 @@ describe('installClaudeCode', () => {
     fs.rmSync(dir, { recursive: true });
   });
 });
+
+const { installSkill } = require('../src/installers/skill');
+
+describe('installSkill', () => {
+  it('creates SKILL.md in .claude/skills/kitsune/', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kitsune-skill-'));
+    await installSkill({ projectDir: dir });
+    const skillPath = path.join(dir, '.claude', 'skills', 'kitsune', 'SKILL.md');
+    assert.ok(fs.existsSync(skillPath), 'SKILL.md should be created');
+    const content = fs.readFileSync(skillPath, 'utf8');
+    assert.ok(content.includes('kitsune'), 'SKILL.md should mention kitsune');
+    fs.rmSync(dir, { recursive: true });
+  });
+
+  it('is idempotent — does not throw on second run', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kitsune-skill-'));
+    await installSkill({ projectDir: dir });
+    await assert.doesNotReject(() => installSkill({ projectDir: dir }));
+    fs.rmSync(dir, { recursive: true });
+  });
+});
