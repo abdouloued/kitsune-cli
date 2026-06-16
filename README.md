@@ -228,27 +228,38 @@ kitsune uninstall --opencode
 
 ### Codex CLI
 
-Codex CLI has no hook system. The recommended pattern is a shell wrapper
-that pipes Codex output through kitsune.
-
-**Pipe directly in the terminal:**
+Codex reads `AGENTS.md` for agent instructions. Install kitsune support with:
 
 ```bash
-codex "fix the failing tests" | kitsune --persona roast
+kitsune install --codex
+```
+
+This appends a kitsune block to `AGENTS.md` (creates it if missing). After that, tell Codex:
+
+> "kitsune roast this"
+> "run that through kitsune zen"
+> "give me the hype version"
+
+and Codex will pipe its response through kitsune automatically.
+
+**Uninstall:**
+
+```bash
+kitsune uninstall --codex
+```
+
+**Pipe directly (no install needed):**
+
+```bash
+codex "fix the failing tests" 2>&1 | kitsune --persona roast
 ```
 
 **Shell wrapper (add to `.bashrc` / `.zshrc`):**
 
 ```bash
 kx() {
-  codex "$@" | kitsune
+  codex "$@" 2>&1 | kitsune
 }
-```
-
-Usage:
-
-```bash
-kx "refactor this module"
 ```
 
 ---

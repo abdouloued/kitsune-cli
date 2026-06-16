@@ -9,6 +9,7 @@ const { installClaudeCode, uninstallClaudeCode } = require('./claude-code');
 const { installOpencode,   uninstallOpencode   } = require('./opencode');
 const { installSkill,      uninstallSkill      } = require('./skill');
 const { installOllama,     uninstallOllama, isOllamaInstalled } = require('./ollama');
+const { installCodex,      uninstallCodex  } = require('./codex');
 
 function detectOpencodeDir() {
   const candidates = [
@@ -59,6 +60,17 @@ async function installAll({ yes = false, projectDir } = {}) {
     console.log('⊘ Skill skipped');
   }
 
+  // Codex: add kitsune block to AGENTS.md if file exists or codex binary is present
+  const agentsPath = path.join(projectDir || process.cwd(), 'AGENTS.md');
+  const { execFileSync } = require('child_process');
+  const hasCodex = (() => { try { execFileSync('codex', ['--version'], { stdio: 'ignore' }); return true; } catch { return false; } })();
+  if (fs.existsSync(agentsPath) || hasCodex) {
+    await installCodex({ projectDir });
+    results.push('codex');
+  } else {
+    console.log('⊘ codex not found and no AGENTS.md — skipping (run kitsune install --codex manually)');
+  }
+
   // Ollama: install wrappers if ollama binary is present
   if (isOllamaInstalled()) {
     await installOllama();
@@ -75,6 +87,7 @@ async function uninstallAll({ projectDir } = {}) {
   await uninstallOpencode();
   await uninstallSkill({ projectDir });
   await uninstallOllama();
+  await uninstallCodex({ projectDir });
   console.log('\n✓ Uninstall complete');
 }
 
