@@ -51,7 +51,8 @@ function parseArgs(argv) {
     else if (arg === '--opencode')    { args.target = 'opencode'; }
     else if (arg === '--skill')       { args.target = 'skill'; }
     else if (arg === '--ollama')      { args.target = 'ollama'; }
-    else if (arg === '--codex')       { args.target = 'codex'; }
+    else if (arg === '--codex')        { args.target = 'codex'; }
+    else if (arg === '--codex-plugin') { args.target = 'codex-plugin'; }
     else if (arg === '--all')         { args.target = 'all'; }
     else if (arg === '--global')      { args.global = true; }
     else if (arg === '--yes' || arg === '-y') { args.yes = true; }
@@ -178,6 +179,10 @@ async function runInstall(args) {
     const { installCodex } = require('./installers/codex');
     await installCodex();
   }
+  if (target === 'codex-plugin') {
+    const { installCodexPlugin } = require('./installers/codex');
+    await installCodexPlugin();
+  }
 }
 
 async function runUninstall(args) {
@@ -201,6 +206,10 @@ async function runUninstall(args) {
   if (target === 'codex' || target === 'all') {
     const { uninstallCodex } = require('./installers/codex');
     await uninstallCodex();
+  }
+  if (target === 'codex-plugin' || target === 'all') {
+    const { uninstallCodexPlugin } = require('./installers/codex');
+    await uninstallCodexPlugin();
   }
 }
 

@@ -9,7 +9,7 @@ const { installClaudeCode, uninstallClaudeCode } = require('./claude-code');
 const { installOpencode,   uninstallOpencode   } = require('./opencode');
 const { installSkill,      uninstallSkill      } = require('./skill');
 const { installOllama,     uninstallOllama, isOllamaInstalled } = require('./ollama');
-const { installCodex,      uninstallCodex  } = require('./codex');
+const { installCodex, uninstallCodex, installCodexPlugin, uninstallCodexPlugin } = require('./codex');
 
 function detectOpencodeDir() {
   const candidates = [
@@ -71,6 +71,15 @@ async function installAll({ yes = false, projectDir } = {}) {
     console.log('⊘ codex not found and no AGENTS.md — skipping (run kitsune install --codex manually)');
   }
 
+  // Codex plugin: install into ~/.codex if Codex app is installed
+  const codexHome = path.join(os.homedir(), '.codex');
+  if (fs.existsSync(codexHome)) {
+    await installCodexPlugin();
+    results.push('codex-plugin');
+  } else {
+    console.log('⊘ ~/.codex not found — skipping Codex plugin install');
+  }
+
   // Ollama: install wrappers if ollama binary is present
   if (isOllamaInstalled()) {
     await installOllama();
@@ -88,6 +97,7 @@ async function uninstallAll({ projectDir } = {}) {
   await uninstallSkill({ projectDir });
   await uninstallOllama();
   await uninstallCodex({ projectDir });
+  await uninstallCodexPlugin();
   console.log('\n✓ Uninstall complete');
 }
 
