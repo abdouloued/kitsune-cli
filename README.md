@@ -168,41 +168,6 @@ kitsune uninstall --claude-code --global   # global hook
 
 ---
 
-### Codex CLI
-
-Codex CLI does not have a hook or plugin system, but you can pipe its output
-directly or wrap it in a shell function for automatic kitsune rendering.
-
-**Direct pipe:**
-
-```bash
-codex "fix the failing tests" | kitsune --persona sensei
-codex run task.md 2>&1 | kitsune --persona roast
-```
-
-> Add `2>&1` to capture error output too — Codex writes some output to stderr.
-
-**Shell wrapper** (add to `~/.zshrc` or `~/.bashrc`):
-
-```bash
-kx() {
-  codex "$@" 2>&1 | kitsune --persona default
-}
-```
-
-Then use `kx "fix bug"` instead of `codex "fix bug"`.
-
-**With agent animation:**
-
-```bash
-codex "fix bug" 2>&1 | KITSUNE_AGENT=codex kitsune --persona sensei
-```
-
-Setting `KITSUNE_AGENT` shows the thinking fox while Codex is running, then
-transitions to the final pose when it completes.
-
----
-
 ### opencode
 
 Installs a plugin that pipes the last 2000 characters of each session through
@@ -417,25 +382,35 @@ kitsune uninstall --skill
 Detect and install every available integration in one command:
 
 ```bash
-kitsune install --all
+kitsune install --all          # prompts for skill
+kitsune install --all --yes    # no prompts, installs everything
 ```
 
-- If `.claude/` exists in the current directory, the Claude Code hook is added.
-- If opencode config is detected (`~/.opencode` or `~/.config/opencode`), the
-  opencode plugin is written.
-- Prompts whether to install the Claude Code skill (skip the prompt with
-  `--yes` / `-y`).
+Auto-detects what's present and installs accordingly:
 
-**With auto-confirm:**
-
-```bash
-kitsune install --all --yes
-```
+| Condition | Action |
+|-----------|--------|
+| `.claude/` exists in project | Claude Code Stop hook |
+| `~/.opencode` or `~/.config/opencode` exists | opencode plugin |
+| `codex` binary found or `AGENTS.md` exists | Codex `AGENTS.md` block |
+| `ollama` binary found | Ollama shell wrappers → `~/.kitsune-ollama.sh` |
+| Claude Code skill | Prompted (or auto-yes with `--yes`) |
 
 **Uninstall everything:**
 
 ```bash
-kitsune uninstall
+kitsune uninstall --all
+```
+
+**Uninstall individual integrations:**
+
+```bash
+kitsune uninstall --claude-code          # Claude Code hook (project)
+kitsune uninstall --claude-code --global # Claude Code hook (global)
+kitsune uninstall --opencode             # opencode plugin
+kitsune uninstall --skill                # SKILL.md
+kitsune uninstall --codex                # AGENTS.md block
+kitsune uninstall --ollama               # ~/.kitsune-ollama.sh
 ```
 
 ---
@@ -488,17 +463,21 @@ directory first, then `~/.kitsunerc`.
 
 | Subcommand                          | Description                                   |
 |-------------------------------------|-----------------------------------------------|
-| `kitsune install --claude-code`     | Install Claude Code Stop hook (project)       |
-| `kitsune install --claude-code --global` | Install Claude Code Stop hook (global)   |
-| `kitsune install --opencode`        | Install opencode plugin                       |
-| `kitsune install --skill`           | Install Claude Code skill (SKILL.md)          |
-| `kitsune install --all [--yes]`     | Install all detected integrations             |
-| `kitsune uninstall [--claude-code]` | Remove Claude Code hook                       |
-| `kitsune uninstall --opencode`      | Remove opencode plugin                        |
-| `kitsune uninstall --skill`         | Remove SKILL.md                               |
-| `kitsune uninstall`                 | Remove all integrations                       |
-| `kitsune mcp`                       | Start MCP server                              |
-| `kitsune --persona list`            | Print all available personas                  |
+| `kitsune install --claude-code`          | Claude Code Stop hook (project)               |
+| `kitsune install --claude-code --global` | Claude Code Stop hook (global)                |
+| `kitsune install --opencode`             | opencode plugin                               |
+| `kitsune install --skill`                | Claude Code skill (SKILL.md)                  |
+| `kitsune install --codex`                | Codex AGENTS.md block                         |
+| `kitsune install --ollama`               | Ollama shell wrappers (~/.kitsune-ollama.sh)  |
+| `kitsune install --all [--yes]`          | All detected integrations                     |
+| `kitsune uninstall --claude-code`        | Remove Claude Code hook                       |
+| `kitsune uninstall --opencode`           | Remove opencode plugin                        |
+| `kitsune uninstall --skill`              | Remove SKILL.md                               |
+| `kitsune uninstall --codex`              | Remove AGENTS.md block                        |
+| `kitsune uninstall --ollama`             | Remove ~/.kitsune-ollama.sh                   |
+| `kitsune uninstall --all`                | Remove all integrations                       |
+| `kitsune mcp`                            | Start MCP server                              |
+| `kitsune --persona list`                 | Print all available personas                  |
 
 ---
 
