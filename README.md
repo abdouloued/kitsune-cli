@@ -32,11 +32,22 @@ npm test 2>&1 | kitsune --persona roast
 
 ## Install
 
+**From npm (recommended):**
+
 ```bash
 npm install -g kitsune-cli
 ```
 
-Verify:
+**From source (clone the repo):**
+
+```bash
+git clone https://github.com/abdouloued/kitsune-cli.git
+cd kitsune-cli
+npm install
+npm link          # makes `kitsune` available globally
+```
+
+**Verify:**
 
 ```bash
 kitsune --version
