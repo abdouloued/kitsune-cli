@@ -3,12 +3,13 @@
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const { FOX_ASCII, FOX_UNICODE } = require('../art/fox-ascii');
+const { FOX_ASCII, FOX_UNICODE, TAIL_META } = require('../art/fox-ascii');
 const { renderWithArt } = require('./bubble');
 const { PERSONAS, getPersona, getArtPose } = require('./personas');
 const { detectMood } = require('./mood');
 const { PERSONA_COLORS, colorize, setNoColorFlag } = require('./color');
 const { summarize, summarizeSmart } = require('./summarize');
+const { buildFrame, startTailShimmer, thinkingTransition, stopAnimation } = require('./animator');
 
 // ── Arg parsing ──────────────────────────────────────────────────────────────
 
@@ -22,6 +23,8 @@ function parseArgs(argv) {
     command: null,
     target: null,
     global: false,
+    agent: null,
+    noAnimation: false,
     raw: [],
   };
 
@@ -46,6 +49,8 @@ function parseArgs(argv) {
     else if (arg === '--skill')       { args.target = 'skill'; }
     else if (arg === '--all')         { args.target = 'all'; }
     else if (arg === '--global')      { args.global = true; }
+    else if (arg === '--agent')         { args.agent = argv[++i]; }
+    else if (arg === '--no-animation')  { args.noAnimation = true; }
     else { args.raw.push(arg); }
   }
 
@@ -192,22 +197,41 @@ async function main() {
   const poseKey = getArtPose(args.persona, mood);
 
   const useUnicode = args.unicode !== null ? args.unicode : supportsUnicode();
-  const artSet  = useUnicode ? FOX_UNICODE : FOX_ASCII;
-  const artLines = artSet[poseKey] || artSet.default;
+  const artSet     = useUnicode ? FOX_UNICODE : FOX_ASCII;
+  const artLines   = artSet[poseKey] || artSet.default;
+  const tailMeta   = useUnicode ? (TAIL_META[poseKey] || null) : null;
 
-  const palette = PERSONA_COLORS[args.persona] || PERSONA_COLORS.default;
-  const coloredArt = artLines.map(line => colorize(line, palette.fox));
+  const palette          = PERSONA_COLORS[args.persona] || PERSONA_COLORS.default;
   const applyBorderColor = s => colorize(s, palette.bubble);
 
-  const output = renderWithArt(text, coloredArt, {
-    maxWidth: args.maxWidth,
-    applyBorderColor,
-  });
-  console.log(output);
+  const isAnimated = process.stdout.isTTY && !args.noAnimation;
+  const agentName  = process.env.KITSUNE_AGENT || args.agent;
+
+  // Thinking transition — only in agent mode on TTY
+  if (isAnimated && agentName) {
+    const thinkLines = artSet.thinking;
+    const thinkMeta  = useUnicode ? (TAIL_META.thinking || null) : null;
+    await thinkingTransition(thinkLines, thinkMeta, palette);
+  }
+
+  const framedArt = buildFrame(artLines, tailMeta, palette, null);
+  const output    = renderWithArt(text, framedArt, { maxWidth: args.maxWidth, applyBorderColor });
+  process.stdout.write(output + '\n');
+
+  if (isAnimated) {
+    const stop = startTailShimmer(artLines, tailMeta, palette);
+    process.on('exit', stop);
+    // In agent mode, stay alive 3s so the shimmer is visible
+    if (agentName) {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+  }
+
+  stopAnimation();
 }
 
 if (require.main === module) {
   main().catch(err => { console.error(err.message); process.exit(1); });
 }
 
-module.exports = { parseArgs, loadConfig };
+module.exports = { parseArgs, loadConfig, main };

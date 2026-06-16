@@ -61,6 +61,26 @@ describe('parseArgs', () => {
   });
 });
 
+describe('parseArgs — phase 2 flags', () => {
+  it('parses --agent flag', () => {
+    const { parseArgs } = require('../src/cli');
+    const args = parseArgs(['--agent', 'claude-code']);
+    assert.equal(args.agent, 'claude-code');
+  });
+
+  it('parses --no-animation flag', () => {
+    const { parseArgs } = require('../src/cli');
+    const args = parseArgs(['--no-animation']);
+    assert.equal(args.noAnimation, true);
+  });
+
+  it('agent defaults to null', () => {
+    const { parseArgs } = require('../src/cli');
+    const args = parseArgs([]);
+    assert.equal(args.agent, null);
+  });
+});
+
 describe('loadConfig', () => {
   it('returns empty object when no config file exists', () => {
     const cfg = loadConfig('/tmp/nonexistent-dir-kitsune-test-xyz');
