@@ -132,10 +132,18 @@ EXAMPLES
 }
 
 function printPersonaList() {
-  console.log('Available personas:\n');
+  const header = colorize(
+    'KEY        NAME                VIBE',
+    PERSONA_COLORS.default.bubble
+  );
+  const divider = '─────────  ──────────────────  ─────────────────────────────────────────';
+  console.log('\nAvailable personas:\n');
+  console.log(header);
+  console.log(divider);
   for (const [key, p] of Object.entries(PERSONAS)) {
-    console.log(`  ${key.padEnd(10)} ${p.description}`);
+    console.log(`${key.padEnd(10)} ${p.name.padEnd(19)} ${p.description}`);
   }
+  console.log('');
 }
 
 async function runInstall(args) {
@@ -174,14 +182,14 @@ async function main() {
   if (args.unicode === null && config.unicode != null) args.unicode = config.unicode;
   if (!args.noColor && config.color === false)         args.noColor = true;
 
+  setNoColorFlag(args.noColor);
+
   // Route subcommands before touching stdin
   if (args.command === 'mcp')           { return runMcp(); }
   if (args.command === 'version')       { return printVersion(); }
   if (args.command === 'help')          { return printHelp(); }
   if (args.command === 'list-personas') { return printPersonaList(); }
   if (args.command === 'install')       { return runInstall(args); }
-
-  setNoColorFlag(args.noColor);
 
   const input = (await readStdin()) || args.raw.join(' ') || '...';
   const persona = getPersona(args.persona);

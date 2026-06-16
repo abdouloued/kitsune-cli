@@ -18,6 +18,9 @@ const PERSONA_COLORS = {
   zen:     { fox: COLORS.cyan,          bubble: COLORS.dim  },
   hype:    { fox: COLORS.brightOrange,  bubble: COLORS.bold },
   noir:    { fox: COLORS.white,         bubble: COLORS.dim  },
+  tsundere: { fox: COLORS.brightWhite,  bubble: COLORS.dim  },
+  sensei:   { fox: COLORS.cyan,         bubble: COLORS.dim  },
+  chaos:    { fox: COLORS.brightOrange, bubble: COLORS.bold },
 };
 
 let _noColorFlag = false;

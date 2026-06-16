@@ -99,3 +99,35 @@ describe('loadConfig', () => {
     fs.rmSync(dir, { recursive: true });
   });
 });
+
+describe('new personas', () => {
+  it('tsundere, sensei, chaos are defined in PERSONAS', () => {
+    delete require.cache[require.resolve('../src/personas')];
+    const { PERSONAS } = require('../src/personas');
+    for (const key of ['tsundere', 'sensei', 'chaos']) {
+      assert.ok(PERSONAS[key], `missing persona: ${key}`);
+      assert.ok(PERSONAS[key].name, `${key} missing name`);
+      assert.ok(PERSONAS[key].tone, `${key} missing tone`);
+      assert.ok(PERSONAS[key].moods, `${key} missing moods`);
+      assert.ok(PERSONAS[key].colorHint, `${key} missing colorHint`);
+    }
+  });
+
+  it('getPersona falls back to default for unknown key', () => {
+    const { getPersona } = require('../src/personas');
+    const p = getPersona('nonexistent');
+    assert.equal(p.name, 'Kitsune');
+  });
+});
+
+describe('--persona list', () => {
+  it('PERSONAS has exactly 8 entries including tsundere, sensei, chaos', () => {
+    delete require.cache[require.resolve('../src/personas')];
+    const { PERSONAS } = require('../src/personas');
+    const keys = Object.keys(PERSONAS);
+    assert.ok(keys.includes('tsundere'), 'tsundere should exist');
+    assert.ok(keys.includes('sensei'),   'sensei should exist');
+    assert.ok(keys.includes('chaos'),    'chaos should exist');
+    assert.equal(keys.length, 8, 'should have exactly 8 personas');
+  });
+});
