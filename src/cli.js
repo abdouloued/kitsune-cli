@@ -262,7 +262,11 @@ async function main() {
   const summary = args.smart
     ? await summarizeSmart(input, persona)
     : summarize(input);
-  const quip = !args.smart ? getQuip(args.persona, mood) : null;
+  // Skip quip when input is already prose/commentary (avg line length > 60)
+  // — means the caller (e.g. Claude) already wrote the persona voice
+  const lines = input.split('\n').filter(Boolean);
+  const avgLen = lines.reduce((s, l) => s + l.length, 0) / (lines.length || 1);
+  const quip = (!args.smart && avgLen <= 60) ? getQuip(args.persona, mood) : null;
   const text = quip ? `${quip}\n${summary}` : summary;
 
   const artLines   = artSet[poseKey] || artSet.default;
