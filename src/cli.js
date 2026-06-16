@@ -9,6 +9,7 @@ const { PERSONAS, getPersona, getArtPose } = require('./personas');
 const { detectMood } = require('./mood');
 const { PERSONA_COLORS, colorize, setNoColorFlag } = require('./color');
 const { summarize, summarizeSmart } = require('./summarize');
+const { getQuip } = require('./quip');
 const { buildFrame, startTailShimmer, startWaitingAnimation, thinkingTransition, stopAnimation } = require('./animator');
 
 // ── Arg parsing ──────────────────────────────────────────────────────────────
@@ -252,15 +253,17 @@ async function main() {
 
   const persona = getPersona(args.persona);
 
-  const text = args.smart
-    ? await summarizeSmart(input, persona)
-    : summarize(input);
-
   const exitCode = process.env.KITSUNE_EXIT_CODE
     ? parseInt(process.env.KITSUNE_EXIT_CODE, 10)
     : null;
   const mood    = detectMood(input, exitCode);
   const poseKey = getArtPose(args.persona, mood);
+
+  const summary = args.smart
+    ? await summarizeSmart(input, persona)
+    : summarize(input);
+  const quip = !args.smart ? getQuip(args.persona, mood) : null;
+  const text = quip ? `${quip}\n${summary}` : summary;
 
   const artLines   = artSet[poseKey] || artSet.default;
   const tailMeta   = useUnicode ? (TAIL_META[poseKey] || null) : null;

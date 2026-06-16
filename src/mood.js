@@ -3,7 +3,8 @@
 
 const ERROR_PATTERNS = [
   /error/i,
-  /fail(ed|ure)?/i,
+  /\bfailed\b/i,
+  /[1-9]\d*\s+fail(ed|ure)/i,  // "2 failures" yes — "0 failures" no
   /exception/i,
   /traceback/i,
   /\bfatal\b/i,
