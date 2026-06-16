@@ -35,7 +35,7 @@ server.tool(
   'kitsune_say',
   {
     text: z.string().describe('Text to render in the kitsune speech bubble'),
-    persona: z.string().optional().describe('Persona: default | roast | zen | hype | noir'),
+    persona: z.string().optional().describe('Persona: default | roast | zen | hype | noir | tsundere | sensei | chaos'),
   },
   async ({ text, persona }) => ({
     content: [{ type: 'text', text: render(text, persona) }],

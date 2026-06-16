@@ -334,15 +334,9 @@ cargo build 2>&1 | kitsune --persona sensei
 ### MCP Server
 
 Run kitsune as an MCP (Model Context Protocol) server. This exposes a
-`kitsune_say` tool that any MCP-compatible client can call.
+`kitsune_say(text, persona?)` tool that any MCP-compatible client can call.
 
-**Start the server:**
-
-```bash
-kitsune mcp
-```
-
-**Add to your MCP client config** (`claude.json` or equivalent):
+**Add to Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 
 ```json
 {
@@ -355,8 +349,28 @@ kitsune mcp
 }
 ```
 
-Once registered, the AI agent can call `kitsune_say` to render output through
-any persona without you having to pipe manually.
+**Add to Claude Code** (`.claude/settings.json` or `~/.claude/settings.json`):
+
+```json
+{
+  "mcpServers": {
+    "kitsune": {
+      "command": "kitsune",
+      "args": ["mcp"],
+      "type": "stdio"
+    }
+  }
+}
+```
+
+Once registered, the AI can call `kitsune_say` directly:
+
+```
+kitsune_say("All tests passed", "roast")
+→ renders the roast fox in a speech bubble as text
+```
+
+Personas available: `default` · `roast` · `zen` · `hype` · `noir` · `tsundere` · `sensei` · `chaos`
 
 ---
 
