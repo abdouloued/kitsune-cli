@@ -131,12 +131,64 @@ kitsune install --claude-code --global
 The `KITSUNE_AGENT` environment variable enables the thinking-transition
 animation and keeps the fox on screen for 3 seconds so you can read it.
 
+**Skill (ask Claude Code to invoke kitsune on request):**
+
+```bash
+kitsune install --skill
+```
+
+After installation you can say _"run that through kitsune roast"_ or _"explain
+that like kitsune would"_ and Claude Code will pipe its response through kitsune
+automatically.
+
+**Install everything at once:**
+
+```bash
+kitsune install --all          # detects Claude Code + opencode, prompts for skill
+kitsune install --all --yes    # same, no prompts
+```
+
 **Uninstall:**
 
 ```bash
 kitsune uninstall --claude-code
 kitsune uninstall --claude-code --global   # global hook
 ```
+
+---
+
+### Codex CLI
+
+Codex CLI does not have a hook or plugin system, but you can pipe its output
+directly or wrap it in a shell function for automatic kitsune rendering.
+
+**Direct pipe:**
+
+```bash
+codex "fix the failing tests" | kitsune --persona sensei
+codex run task.md 2>&1 | kitsune --persona roast
+```
+
+> Add `2>&1` to capture error output too — Codex writes some output to stderr.
+
+**Shell wrapper** (add to `~/.zshrc` or `~/.bashrc`):
+
+```bash
+kx() {
+  codex "$@" 2>&1 | kitsune --persona default
+}
+```
+
+Then use `kx "fix bug"` instead of `codex "fix bug"`.
+
+**With agent animation:**
+
+```bash
+codex "fix bug" 2>&1 | KITSUNE_AGENT=codex kitsune --persona sensei
+```
+
+Setting `KITSUNE_AGENT` shows the thinking fox while Codex is running, then
+transitions to the final pose when it completes.
 
 ---
 
