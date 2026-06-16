@@ -118,3 +118,17 @@ describe('uninstallSkill', () => {
     fs.rmSync(dir, { recursive: true });
   });
 });
+
+describe('installAll', () => {
+  it('exports installAll and uninstallAll', () => {
+    const mod = require('../src/installers');
+    assert.equal(typeof mod.installAll, 'function');
+    assert.equal(typeof mod.uninstallAll, 'function');
+  });
+
+  it('installAll runs without throwing when .claude/ does not exist', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kitsune-all-'));
+    await assert.doesNotReject(() => require('../src/installers').installAll({ yes: true, projectDir: dir }));
+    fs.rmSync(dir, { recursive: true });
+  });
+});
