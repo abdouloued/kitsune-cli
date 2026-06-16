@@ -8,6 +8,7 @@ const readline = require('readline');
 const { installClaudeCode, uninstallClaudeCode } = require('./claude-code');
 const { installOpencode,   uninstallOpencode   } = require('./opencode');
 const { installSkill,      uninstallSkill      } = require('./skill');
+const { installOllama,     uninstallOllama, isOllamaInstalled } = require('./ollama');
 
 function detectOpencodeDir() {
   const candidates = [
@@ -58,6 +59,14 @@ async function installAll({ yes = false, projectDir } = {}) {
     console.log('⊘ Skill skipped');
   }
 
+  // Ollama: install wrappers if ollama binary is present
+  if (isOllamaInstalled()) {
+    await installOllama();
+    results.push('ollama');
+  } else {
+    console.log('⊘ ollama not found — skipping (run kitsune install --ollama after installing ollama)');
+  }
+
   console.log('\nSummary:', results.length ? results.join(', ') + ' installed' : 'nothing installed');
 }
 
@@ -65,6 +74,7 @@ async function uninstallAll({ projectDir } = {}) {
   await uninstallClaudeCode({ projectDir });
   await uninstallOpencode();
   await uninstallSkill({ projectDir });
+  await uninstallOllama();
   console.log('\n✓ Uninstall complete');
 }
 

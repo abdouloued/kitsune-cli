@@ -242,6 +242,54 @@ kx "refactor this module"
 
 ---
 
+### Ollama Agents
+
+Ollama's `ollama launch` command can run local coding agents (Claude Code, OpenCode, Codex, Codex App, OpenClaw, Hermes Agent) with any compatible model. Kitsune wraps each with a shell function that sets `KITSUNE_AGENT` and pipes output automatically.
+
+**Install:**
+
+```bash
+kitsune install --ollama
+```
+
+This writes `~/.kitsune-ollama.sh`. Add one line to your `~/.zshrc` or `~/.bashrc`:
+
+```bash
+source ~/.kitsune-ollama.sh
+```
+
+**Usage — one command per agent:**
+
+```bash
+ok-claude qwen3.5          # Claude Code via Ollama
+ok-opencode qwen3.5        # OpenCode via Ollama
+ok-codex qwen3.5           # Codex via Ollama
+ok-codex-app qwen3.5       # Codex App via Ollama
+ok-openclaw qwen3.5        # OpenClaw via Ollama
+ok-hermes qwen3.5          # Hermes Agent via Ollama
+```
+
+The model argument is optional — defaults to `qwen3.5`. Pass any model Ollama supports:
+
+```bash
+ok-claude llama3.1
+ok-hermes mistral
+```
+
+Each wrapper sets `KITSUNE_AGENT=ollama-<name>` so you get the thinking→resolved animation and 3-second shimmer after the session ends.
+
+**Works independently of which agents you have installed** — the `ok-*` wrappers call `ollama launch` directly so they work on any machine with Ollama, regardless of whether the underlying agent is also installed natively.
+
+**Uninstall:**
+
+```bash
+kitsune uninstall --ollama   # removes ~/.kitsune-ollama.sh
+```
+
+Remove the `source` line from your shell config manually.
+
+---
+
 ### Cursor
 
 Cursor does not expose a post-session hook. Use kitsune in Cursor's integrated

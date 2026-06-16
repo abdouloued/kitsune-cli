@@ -49,6 +49,7 @@ function parseArgs(argv) {
     else if (arg === '--claude-code') { args.target = 'claude-code'; }
     else if (arg === '--opencode')    { args.target = 'opencode'; }
     else if (arg === '--skill')       { args.target = 'skill'; }
+    else if (arg === '--ollama')      { args.target = 'ollama'; }
     else if (arg === '--all')         { args.target = 'all'; }
     else if (arg === '--global')      { args.global = true; }
     else if (arg === '--yes' || arg === '-y') { args.yes = true; }
@@ -167,6 +168,10 @@ async function runInstall(args) {
     const { installSkill } = require('./installers/skill');
     await installSkill();
   }
+  if (target === 'ollama') {
+    const { installOllama } = require('./installers/ollama');
+    await installOllama();
+  }
 }
 
 async function runUninstall(args) {
@@ -182,6 +187,10 @@ async function runUninstall(args) {
   if (target === 'skill' || target === 'all') {
     const { uninstallSkill } = require('./installers/skill');
     await uninstallSkill();
+  }
+  if (target === 'ollama' || target === 'all') {
+    const { uninstallOllama } = require('./installers/ollama');
+    await uninstallOllama();
   }
 }
 
