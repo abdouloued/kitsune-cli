@@ -131,3 +131,20 @@ describe('--persona list', () => {
     assert.equal(keys.length, 8, 'should have exactly 8 personas');
   });
 });
+
+describe('parseArgs — install/uninstall flags', () => {
+  it('parses --yes flag', () => {
+    const { parseArgs } = require('../src/cli');
+    assert.equal(parseArgs(['install', '--all', '--yes']).yes, true);
+  });
+
+  it('parses -y as alias for --yes', () => {
+    const { parseArgs } = require('../src/cli');
+    assert.equal(parseArgs(['-y']).yes, true);
+  });
+
+  it('parses uninstall command', () => {
+    const { parseArgs } = require('../src/cli');
+    assert.equal(parseArgs(['uninstall', '--claude-code']).command, 'uninstall');
+  });
+});

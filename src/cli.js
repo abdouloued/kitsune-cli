@@ -25,6 +25,7 @@ function parseArgs(argv) {
     global: false,
     agent: null,
     noAnimation: false,
+    yes: false,
     raw: [],
   };
 
@@ -43,12 +44,14 @@ function parseArgs(argv) {
     else if (arg === '--version')     { args.command = 'version'; }
     else if (arg === '--help' || arg === '-h') { args.command = 'help'; }
     else if (arg === 'install')       { args.command = 'install'; }
+    else if (arg === 'uninstall')     { args.command = 'uninstall'; }
     else if (arg === 'mcp')           { args.command = 'mcp'; }
     else if (arg === '--claude-code') { args.target = 'claude-code'; }
     else if (arg === '--opencode')    { args.target = 'opencode'; }
     else if (arg === '--skill')       { args.target = 'skill'; }
     else if (arg === '--all')         { args.target = 'all'; }
     else if (arg === '--global')      { args.global = true; }
+    else if (arg === '--yes' || arg === '-y') { args.yes = true; }
     else if (arg === '--agent')         { args.agent = argv[++i]; }
     else if (arg === '--no-animation')  { args.noAnimation = true; }
     else { args.raw.push(arg); }
@@ -148,17 +151,37 @@ function printPersonaList() {
 
 async function runInstall(args) {
   const target = args.target || 'claude-code';
-  if (target === 'claude-code' || target === 'all') {
+  if (target === 'all') {
+    const { installAll } = require('./installers/index');
+    return installAll({ yes: args.yes });
+  }
+  if (target === 'claude-code') {
     const { installClaudeCode } = require('./installers/claude-code');
     await installClaudeCode({ global: args.global });
   }
-  if (target === 'opencode' || target === 'all') {
+  if (target === 'opencode') {
     const { installOpencode } = require('./installers/opencode');
     await installOpencode();
   }
-  if (target === 'skill' || target === 'all') {
+  if (target === 'skill') {
     const { installSkill } = require('./installers/skill');
     await installSkill();
+  }
+}
+
+async function runUninstall(args) {
+  const target = args.target || 'all';
+  if (target === 'claude-code' || target === 'all') {
+    const { uninstallClaudeCode } = require('./installers/claude-code');
+    await uninstallClaudeCode({ global: args.global });
+  }
+  if (target === 'opencode' || target === 'all') {
+    const { uninstallOpencode } = require('./installers/opencode');
+    await uninstallOpencode();
+  }
+  if (target === 'skill' || target === 'all') {
+    const { uninstallSkill } = require('./installers/skill');
+    await uninstallSkill();
   }
 }
 
@@ -190,6 +213,7 @@ async function main() {
   if (args.command === 'help')          { return printHelp(); }
   if (args.command === 'list-personas') { return printPersonaList(); }
   if (args.command === 'install')       { return runInstall(args); }
+  if (args.command === 'uninstall')     { return runUninstall(args); }
 
   const input = (await readStdin()) || args.raw.join(' ') || '...';
   const persona = getPersona(args.persona);
