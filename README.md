@@ -1,22 +1,34 @@
 # kitsune-cli
 
-A terminal fox spirit that wraps any CLI output in a persona-driven speech bubble.
+A terminal fox spirit companion that wraps any piped CLI or AI output in a
+persona-driven speech bubble with ASCII fox art.
+
+---
+
+## Demo
 
 ```
- _______________
-/ 12 tests pass /
-\ all green!   /
- ---------------
+npm test 2>&1 | kitsune --persona roast
+```
+
+```
+ ________________________________________
+/ Oh wow, 3 failures. Truly impressive   \
+| work. Have you considered a career in  |
+\ interpretive dance instead?            /
+ ----------------------------------------
     \
      \
   /\     /\
  /  \___/  \
-| (^)   (^) |
-|    \w/    |
- \   ~~~   /
+| (~)   (^) |
+|    ,,,    |
+ \   ---   /
   `-------'
-  ~~*****~~
+  ~~_____~~
 ```
+
+---
 
 ## Install
 
@@ -24,87 +36,389 @@ A terminal fox spirit that wraps any CLI output in a persona-driven speech bubbl
 npm install -g kitsune-cli
 ```
 
-## Usage
+Verify:
 
 ```bash
-# Pipe anything through kitsune
-echo "Build passed" | kitsune
-
-# Pick a persona
-npm test | kitsune --persona roast
-claude "fix bug" --print | kitsune --persona zen
-
-# Smart summarization (requires ANTHROPIC_API_KEY or OPENAI_API_KEY)
-npm test | kitsune --smart
+kitsune --version
 ```
 
+---
+
+## Quick Start
+
+Pipe any command output through kitsune:
+
+```bash
+# Default persona
+echo "Build passed" | kitsune
+
+# Roast persona for test failures
+npm test | kitsune --persona roast
+
+# Zen for deployment output
+git push | kitsune --persona zen
+
+# Claude Code output with smart summarization
+claude "fix bug" --print | kitsune --smart
+
+# Codex CLI output
+codex run fix-tests | kitsune --persona hype
+
+# opencode session output
+opencode run | kitsune --persona noir
+```
+
+---
+
 ## Personas
+
+List all available personas:
 
 ```bash
 kitsune --persona list
 ```
 
-| Persona   | Vibe                                              |
-|-----------|---------------------------------------------------|
-| `default` | Friendly, concise, lightly playful                |
-| `roast`   | Sarcastic, witty, judges your code                |
-| `zen`     | Calm, wise, reframes errors as lessons            |
-| `hype`    | Over-the-top enthusiastic, celebrates everything  |
-| `noir`    | Detective narration, bugs = crimes                |
+| Key        | Name              | Example output line                                         |
+|------------|-------------------|-------------------------------------------------------------|
+| `default`  | Kitsune           | "Build passed in 2.3s. All good here."                     |
+| `roast`    | Roast Kitsune     | "It passed. Probably a fluke."                              |
+| `zen`      | Zen Kitsune       | "The build is green. Let this moment of peace guide you."   |
+| `hype`     | Hype Kitsune      | "YESSS!! ALL TESTS PASSING!! YOU ARE UNSTOPPABLE!!"         |
+| `noir`     | Noir Kitsune      | "Tests passed. Another case closed. Don't celebrate yet."   |
+| `tsundere` | Tsundere Kitsune  | "It passed. Not that I was worried or anything."            |
+| `sensei`   | Sensei Kitsune    | "Good. Now ask yourself why it works."                      |
+| `chaos`    | Chaos Kitsune     | "THE BUILD IS GREEN. somewhere a butterfly notices."        |
 
-## Claude Code Integration
+---
+
+## Integrations
+
+### Claude Code
+
+Installs a `Stop` hook so kitsune runs automatically after every Claude Code
+session ends.
+
+**Install (project-level):**
 
 ```bash
-kitsune install --claude-code          # add Stop hook to project
-kitsune install --claude-code --global # add Stop hook globally
-kitsune install --skill                # install Claude Code skill
-kitsune install --all                  # install everything detected
+kitsune install --claude-code
 ```
 
-## opencode Integration
+**Install (global, all projects):**
+
+```bash
+kitsune install --claude-code --global
+```
+
+**What it does:** Appends the following entry to `.claude/settings.json`
+(or `~/.claude/settings.json` for global):
+
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "KITSUNE_AGENT=claude-code kitsune" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The `KITSUNE_AGENT` environment variable enables the thinking-transition
+animation and keeps the fox on screen for 3 seconds so you can read it.
+
+**Uninstall:**
+
+```bash
+kitsune uninstall --claude-code
+kitsune uninstall --claude-code --global   # global hook
+```
+
+---
+
+### opencode
+
+Installs a plugin that pipes the last 2000 characters of each session through
+kitsune when the session ends.
+
+**Install:**
 
 ```bash
 kitsune install --opencode
 ```
 
-## MCP Server
+**What it does:** Writes `kitsune-plugin.js` to your opencode plugins directory
+(`~/.opencode/plugins/` or `~/.config/opencode/plugins/`). If the directory
+cannot be found, manual instructions are printed.
 
-Run kitsune as an MCP server exposing the `kitsune_say` tool:
+**Uninstall:**
+
+```bash
+kitsune uninstall --opencode
+```
+
+---
+
+### Codex CLI
+
+Codex CLI has no hook system. The recommended pattern is a shell wrapper
+that pipes Codex output through kitsune.
+
+**Pipe directly in the terminal:**
+
+```bash
+codex "fix the failing tests" | kitsune --persona roast
+```
+
+**Shell wrapper (add to `.bashrc` / `.zshrc`):**
+
+```bash
+kx() {
+  codex "$@" | kitsune
+}
+```
+
+Usage:
+
+```bash
+kx "refactor this module"
+```
+
+---
+
+### Cursor
+
+Cursor does not expose a post-session hook. Use kitsune in Cursor's integrated
+terminal by piping commands manually:
+
+```bash
+npm run build | kitsune --persona hype
+```
+
+For repeated use, add the shell wrapper above to your shell profile and it will
+be available inside Cursor's terminal.
+
+---
+
+### Windsurf
+
+Same as Cursor — pipe from Windsurf's integrated terminal:
+
+```bash
+npm test | kitsune --persona zen
+```
+
+Or run any long command and pipe to kitsune:
+
+```bash
+cargo build 2>&1 | kitsune --persona sensei
+```
+
+---
+
+### MCP Server
+
+Run kitsune as an MCP (Model Context Protocol) server. This exposes a
+`kitsune_say` tool that any MCP-compatible client can call.
+
+**Start the server:**
 
 ```bash
 kitsune mcp
 ```
 
-Add to your MCP config:
+**Add to your MCP client config** (`claude.json` or equivalent):
 
 ```json
 {
   "mcpServers": {
-    "kitsune": { "command": "kitsune", "args": ["mcp"] }
+    "kitsune": {
+      "command": "kitsune",
+      "args": ["mcp"]
+    }
   }
 }
 ```
 
-## Config file
+Once registered, the AI agent can call `kitsune_say` to render output through
+any persona without you having to pipe manually.
 
-Create `.kitsune.json` in your project root or `~/.kitsunerc` globally:
+---
+
+### Claude Code Skill
+
+Install a SKILL.md file so Claude Code knows when and how to pipe output
+through kitsune.
+
+**Install:**
+
+```bash
+kitsune install --skill
+```
+
+**What it does:** Writes `.claude/skills/kitsune/SKILL.md` to your current
+project. Claude Code will use the skill when you ask things like:
+
+- "explain that like kitsune would"
+- "run that through kitsune"
+- "show me the kitsune version of this"
+- "roast my test output"
+
+**Uninstall:**
+
+```bash
+kitsune uninstall --skill
+```
+
+---
+
+## Install All (unified installer)
+
+Detect and install every available integration in one command:
+
+```bash
+kitsune install --all
+```
+
+- If `.claude/` exists in the current directory, the Claude Code hook is added.
+- If opencode config is detected (`~/.opencode` or `~/.config/opencode`), the
+  opencode plugin is written.
+- Prompts whether to install the Claude Code skill (skip the prompt with
+  `--yes` / `-y`).
+
+**With auto-confirm:**
+
+```bash
+kitsune install --all --yes
+```
+
+**Uninstall everything:**
+
+```bash
+kitsune uninstall
+```
+
+---
+
+## Configuration
+
+Create `.kitsune.json` in your project root, or `~/.kitsunerc` globally.
+CLI flags always take precedence over config file values.
+
+| Key       | Type    | Default     | Description                                      |
+|-----------|---------|-------------|--------------------------------------------------|
+| `persona` | string  | `"default"` | Default persona key                              |
+| `width`   | number  | `40`        | Speech bubble width in characters                |
+| `unicode` | boolean | auto-detect | `true` forces unicode art, `false` forces ASCII  |
+| `color`   | boolean | `true`      | Set to `false` to disable all color output       |
+
+**Example `.kitsune.json`:**
 
 ```json
-{ "persona": "zen", "width": 50, "unicode": true, "color": true }
+{
+  "persona": "zen",
+  "width": 50,
+  "unicode": true,
+  "color": true
+}
 ```
 
-## Options
+Config file is resolved by looking for `.kitsune.json` in the current working
+directory first, then `~/.kitsunerc`.
+
+---
+
+## Flags Reference
+
+| Flag                    | Short | Description                                              |
+|-------------------------|-------|----------------------------------------------------------|
+| `--persona <name>`      | `-p`  | Persona to use (default: `default`). Use `list` to list. |
+| `--width <n>`           | `-w`  | Speech bubble width (default: `40`)                      |
+| `--ascii`               |       | Force ASCII art (ignores terminal unicode support)       |
+| `--unicode`             |       | Force unicode art                                        |
+| `--no-color`            |       | Disable all color output                                 |
+| `--smart`               |       | Use LLM to summarize input (requires API key)            |
+| `--agent <name>`        |       | Set agent name; enables thinking transition animation    |
+| `--no-animation`        |       | Disable tail shimmer and thinking transition             |
+| `--yes` / `-y`          |       | Auto-confirm prompts (used with `install --all`)         |
+| `--version`             |       | Print kitsune version and exit                           |
+| `--help`                | `-h`  | Show help text and exit                                  |
+
+**Subcommands:**
+
+| Subcommand                          | Description                                   |
+|-------------------------------------|-----------------------------------------------|
+| `kitsune install --claude-code`     | Install Claude Code Stop hook (project)       |
+| `kitsune install --claude-code --global` | Install Claude Code Stop hook (global)   |
+| `kitsune install --opencode`        | Install opencode plugin                       |
+| `kitsune install --skill`           | Install Claude Code skill (SKILL.md)          |
+| `kitsune install --all [--yes]`     | Install all detected integrations             |
+| `kitsune uninstall [--claude-code]` | Remove Claude Code hook                       |
+| `kitsune uninstall --opencode`      | Remove opencode plugin                        |
+| `kitsune uninstall --skill`         | Remove SKILL.md                               |
+| `kitsune uninstall`                 | Remove all integrations                       |
+| `kitsune mcp`                       | Start MCP server                              |
+| `kitsune --persona list`            | Print all available personas                  |
+
+---
+
+## How It Works
 
 ```
--p, --persona <name>   Persona (default: default)
--w, --width <n>        Bubble width (default: 40)
---ascii                Force ASCII art
---unicode              Force unicode art
---no-color             Disable color
---smart                LLM summarization (requires API key)
---version              Print version
--h, --help             Show help
+CLI command output
+       |
+       v
+   [ stdin pipe ]
+       |
+       v
+  kitsune reads input
+       |
+       +---> detectMood()  --------> mood key (success / error / thinking / neutral)
+       |
+       +---> getArtPose()  --------> art pose key (happy / roast / error / default ...)
+       |
+       +---> summarize()   --------> trimmed text (or LLM summary if --smart)
+       |
+       v
+  renderWithArt()
+  +---------------------------+
+  |  speech bubble with text  |
+  |  fox ASCII / unicode art  |
+  |  persona color palette    |
+  +---------------------------+
+       |
+       v
+   stdout (with optional tail shimmer animation on TTY)
 ```
+
+**Mood detection** reads exit codes (via `KITSUNE_EXIT_CODE` env var) and
+keyword patterns in the input text (error, warning, success, etc.).
+
+**Animation** (tail shimmer and thinking transition) only runs when stdout is a
+TTY and `--no-animation` is not set. In agent mode (`--agent` or
+`KITSUNE_AGENT`), a thinking transition plays first, then the fox stays on
+screen for 3 seconds.
+
+---
+
+## Contributing
+
+See [docs/SPEC.md](docs/SPEC.md) for the full project specification, including
+architecture decisions, persona tone guidelines, art pose mapping, and the
+animation system design.
+
+```bash
+git clone https://github.com/your-org/kitsune-cli
+cd kitsune-cli
+npm install
+npm test
+```
+
+---
 
 ## License
 
