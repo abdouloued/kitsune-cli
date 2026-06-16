@@ -9,7 +9,7 @@ const { PERSONAS, getPersona, getArtPose } = require('./personas');
 const { detectMood } = require('./mood');
 const { PERSONA_COLORS, colorize, setNoColorFlag } = require('./color');
 const { summarize, summarizeSmart } = require('./summarize');
-const { buildFrame, startTailShimmer, thinkingTransition, stopAnimation } = require('./animator');
+const { buildFrame, startTailShimmer, startWaitingAnimation, thinkingTransition, stopAnimation } = require('./animator');
 
 // ── Arg parsing ──────────────────────────────────────────────────────────────
 
@@ -215,7 +215,23 @@ async function main() {
   if (args.command === 'install')       { return runInstall(args); }
   if (args.command === 'uninstall')     { return runUninstall(args); }
 
+  const useUnicode = args.unicode !== null ? args.unicode : supportsUnicode();
+  const artSet     = useUnicode ? FOX_UNICODE : FOX_ASCII;
+  const palette    = PERSONA_COLORS[args.persona] || PERSONA_COLORS.default;
+  const isAnimated = process.stdout.isTTY && !args.noAnimation;
+  const agentName  = process.env.KITSUNE_AGENT || args.agent;
+
+  // Show thinking fox with shimmer while waiting for piped stdin
+  let stopWaiting = () => {};
+  if (isAnimated && !process.stdin.isTTY) {
+    const thinkLines = artSet.thinking;
+    const thinkMeta  = useUnicode ? (TAIL_META.thinking || null) : null;
+    stopWaiting = startWaitingAnimation(thinkLines, thinkMeta, palette);
+  }
+
   const input = (await readStdin()) || args.raw.join(' ') || '...';
+  stopWaiting();
+
   const persona = getPersona(args.persona);
 
   const text = args.smart
@@ -228,19 +244,13 @@ async function main() {
   const mood    = detectMood(input, exitCode);
   const poseKey = getArtPose(args.persona, mood);
 
-  const useUnicode = args.unicode !== null ? args.unicode : supportsUnicode();
-  const artSet     = useUnicode ? FOX_UNICODE : FOX_ASCII;
   const artLines   = artSet[poseKey] || artSet.default;
   const tailMeta   = useUnicode ? (TAIL_META[poseKey] || null) : null;
 
-  const palette          = PERSONA_COLORS[args.persona] || PERSONA_COLORS.default;
   const applyBorderColor = s => colorize(s, palette.bubble);
 
-  const isAnimated = process.stdout.isTTY && !args.noAnimation;
-  const agentName  = process.env.KITSUNE_AGENT || args.agent;
-
-  // Thinking transition — only in agent mode on TTY
-  if (isAnimated && agentName) {
+  // Thinking transition — only in agent mode on TTY (skip if already showed waiting animation)
+  if (isAnimated && agentName && process.stdin.isTTY) {
     const thinkLines = artSet.thinking;
     const thinkMeta  = useUnicode ? (TAIL_META.thinking || null) : null;
     await thinkingTransition(thinkLines, thinkMeta, palette);

@@ -131,6 +131,33 @@ async function thinkingTransition(thinkingLines, thinkingMeta, palette) {
 }
 
 /**
+ * Shows the thinking pose with shimmer while waiting for async work (e.g. stdin).
+ * Returns a stop function that erases the thinking fox from the terminal.
+ * Call stop() before rendering the final output.
+ * @param {string[]} artLines - thinking pose art
+ * @param {object|null} tailMeta - TAIL_META.thinking
+ * @param {object} palette - persona palette
+ * @returns {() => void} stop function — erases the thinking fox
+ */
+function startWaitingAnimation(artLines, tailMeta, palette) {
+  if (!process.stdout.isTTY) return () => {};
+
+  const frame = buildFrame(artLines, tailMeta, palette, null);
+  const numLines = frame.length;
+  process.stdout.write(frame.join('\n') + '\n');
+  const stopShimmer = startTailShimmer(artLines, tailMeta, palette);
+
+  return () => {
+    stopShimmer();
+    process.stdout.write(`\x1b[${numLines}A`);
+    for (let i = 0; i < numLines; i++) {
+      process.stdout.write('\x1b[2K\r\n');
+    }
+    process.stdout.write(`\x1b[${numLines}A`);
+  };
+}
+
+/**
  * Stops the active shimmer interval. Safe to call multiple times.
  */
 function stopAnimation() {
@@ -140,4 +167,4 @@ function stopAnimation() {
   }
 }
 
-module.exports = { buildFrame, startTailShimmer, thinkingTransition, stopAnimation };
+module.exports = { buildFrame, startTailShimmer, startWaitingAnimation, thinkingTransition, stopAnimation };
