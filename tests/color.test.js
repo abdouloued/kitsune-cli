@@ -34,3 +34,30 @@ describe('color', () => {
     }
   });
 });
+
+describe('rgb', () => {
+  it('returns a 24-bit foreground ANSI escape code', () => {
+    delete require.cache[require.resolve('../src/color')];
+    const { rgb } = require('../src/color');
+    const code = rgb(224, 123, 42);
+    assert.equal(code, '\x1b[38;2;224;123;42m');
+  });
+
+  it('returns empty string when NO_COLOR is set', () => {
+    process.env.NO_COLOR = '1';
+    delete require.cache[require.resolve('../src/color')];
+    const { rgb } = require('../src/color');
+    assert.equal(rgb(255, 0, 0), '');
+    delete process.env.NO_COLOR;
+    delete require.cache[require.resolve('../src/color')];
+  });
+
+  it('colorizeRgb wraps string with 24-bit color and reset', () => {
+    delete require.cache[require.resolve('../src/color')];
+    const { colorizeRgb } = require('../src/color');
+    const result = colorizeRgb('hello', 240, 180, 60);
+    assert.ok(result.startsWith('\x1b[38;2;240;180;60m'), 'should start with rgb escape');
+    assert.ok(result.includes('hello'));
+    assert.ok(result.endsWith('\x1b[0m'), 'should end with reset');
+  });
+});

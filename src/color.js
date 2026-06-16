@@ -39,4 +39,24 @@ function stripAnsi(str) {
   return str.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
-module.exports = { COLORS, PERSONA_COLORS, colorize, stripAnsi, colorEnabled, setNoColorFlag };
+/**
+ * Returns a 24-bit foreground ANSI escape code, or '' when color is disabled.
+ * @param {number} r @param {number} g @param {number} b
+ * @returns {string}
+ */
+function rgb(r, g, b) {
+  if (!colorEnabled()) return '';
+  return `\x1b[38;2;${r};${g};${b}m`;
+}
+
+/**
+ * Wraps a string with a 24-bit foreground color and reset.
+ * @param {string} str @param {number} r @param {number} g @param {number} b
+ * @returns {string}
+ */
+function colorizeRgb(str, r, g, b) {
+  if (!colorEnabled()) return str;
+  return `\x1b[38;2;${r};${g};${b}m${str}${COLORS.reset}`;
+}
+
+module.exports = { COLORS, PERSONA_COLORS, colorize, colorizeRgb, rgb, stripAnsi, colorEnabled, setNoColorFlag };
