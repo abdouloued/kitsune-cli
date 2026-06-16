@@ -59,7 +59,10 @@ function summarize(text, maxLines = 3) {
     }
   }
 
-  return lines.slice(-maxLines).join(' · ');
+  // Prose (AI answers, docs): first lines have the main point.
+  // Structured output (logs, traces): last lines have the result.
+  const avgLen = lines.reduce((s, l) => s + l.length, 0) / lines.length;
+  return (avgLen > 60 ? lines.slice(0, maxLines) : lines.slice(-maxLines)).join(' · ');
 }
 
 async function summarizeSmart(text, persona) {
