@@ -64,4 +64,19 @@ async function installOpencode({ dryRun } = {}) {
   }
 }
 
-module.exports = { installOpencode };
+async function uninstallOpencode() {
+  const configDir = findOpencodeConfigDir();
+  if (!configDir) {
+    console.log('⊘ opencode config directory not found — nothing to remove');
+    return;
+  }
+  const pluginPath = path.join(configDir, 'plugins', 'kitsune-plugin.js');
+  if (!fs.existsSync(pluginPath)) {
+    console.log(`⊘ opencode plugin not found at ${pluginPath} — nothing to remove`);
+    return;
+  }
+  fs.rmSync(pluginPath);
+  console.log(`✓ Removed opencode kitsune plugin at ${pluginPath}`);
+}
+
+module.exports = { installOpencode, uninstallOpencode };

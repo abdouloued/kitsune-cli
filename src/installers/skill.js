@@ -52,4 +52,17 @@ async function installSkill({ projectDir } = {}) {
   }
 }
 
-module.exports = { installSkill };
+async function uninstallSkill({ projectDir } = {}) {
+  const skillPath = path.join(
+    projectDir || process.cwd(),
+    '.claude', 'skills', 'kitsune', 'SKILL.md'
+  );
+  if (!fs.existsSync(skillPath)) {
+    console.log(`⊘ SKILL.md not found at ${skillPath} — nothing to remove`);
+    return;
+  }
+  fs.rmSync(skillPath);
+  console.log(`✓ Removed kitsune skill at ${skillPath}`);
+}
+
+module.exports = { installSkill, uninstallSkill };

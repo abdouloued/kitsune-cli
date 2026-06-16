@@ -74,3 +74,47 @@ describe('installOpencode', () => {
     await assert.doesNotReject(() => installOpencode({ dryRun: true }));
   });
 });
+
+describe('uninstallClaudeCode', () => {
+  it('removes the kitsune hook entry from settings.json', async () => {
+    const { installClaudeCode, uninstallClaudeCode } = require('../src/installers/claude-code');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kitsune-uncc-'));
+    await installClaudeCode({ projectDir: dir });
+    await uninstallClaudeCode({ projectDir: dir });
+    const cfg = JSON.parse(fs.readFileSync(path.join(dir, '.claude', 'settings.json'), 'utf8'));
+    const hasKitsune = (cfg.hooks?.Stop || []).some(e =>
+      (e.hooks || []).some(h => h.command && h.command.includes('kitsune'))
+    );
+    assert.ok(!hasKitsune, 'kitsune hook should be removed');
+    fs.rmSync(dir, { recursive: true });
+  });
+
+  it('hook command includes KITSUNE_AGENT=claude-code', async () => {
+    const { installClaudeCode } = require('../src/installers/claude-code');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kitsune-agent-'));
+    await installClaudeCode({ projectDir: dir });
+    const cfg = JSON.parse(fs.readFileSync(path.join(dir, '.claude', 'settings.json'), 'utf8'));
+    const cmd = cfg.hooks.Stop[0].hooks[0].command;
+    assert.ok(cmd.includes('KITSUNE_AGENT=claude-code'), `expected env var in command, got: ${cmd}`);
+    fs.rmSync(dir, { recursive: true });
+  });
+});
+
+describe('uninstallSkill', () => {
+  it('removes SKILL.md if present', async () => {
+    const { installSkill, uninstallSkill } = require('../src/installers/skill');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kitsune-us-'));
+    await installSkill({ projectDir: dir });
+    await uninstallSkill({ projectDir: dir });
+    const skillPath = path.join(dir, '.claude', 'skills', 'kitsune', 'SKILL.md');
+    assert.ok(!fs.existsSync(skillPath), 'SKILL.md should be removed');
+    fs.rmSync(dir, { recursive: true });
+  });
+
+  it('uninstallSkill is a no-op when file does not exist', async () => {
+    const { uninstallSkill } = require('../src/installers/skill');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kitsune-us2-'));
+    await assert.doesNotReject(() => uninstallSkill({ projectDir: dir }));
+    fs.rmSync(dir, { recursive: true });
+  });
+});
